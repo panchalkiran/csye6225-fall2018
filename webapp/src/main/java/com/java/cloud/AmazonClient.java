@@ -51,7 +51,7 @@ public class AmazonClient {
     }
 
     private File convertMultiPartToFile(MultipartFile file) throws IOException {
-        File convFile = new File(file.getOriginalFilename());
+        File convFile = new File("/opt/tomcat/webapps/"+file.getOriginalFilename());
         FileOutputStream fos = new FileOutputStream(convFile);
         fos.write(file.getBytes());
         fos.close();
@@ -80,8 +80,14 @@ public class AmazonClient {
 
     public String deleteFileFromS3Bucket(String fileUrl) {
         String fileName = fileUrl.substring(fileUrl.lastIndexOf("/") + 1);
-        s3client.deleteObject(new DeleteObjectRequest(bucketName + "/", fileName));
+        s3client.deleteObject(new DeleteObjectRequest(bucketName, fileName));
         return "Successfully deleted";
+    }
+
+    public BasicAWSCredentials getCredentials() {
+
+        BasicAWSCredentials credentials = new BasicAWSCredentials(this.accessKey, this.secretKey);
+        return credentials;
     }
 
 

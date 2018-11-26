@@ -2,11 +2,11 @@
 Team Member Details:
 1. Kiran Panchal panchal.k@husky.neu.edu
 2. Komal Suthar suthar.k@husky.neu.edu
-3. Hemant Kamath kamath.h@husky.neu.edu
+3. Hemant Kamathhh kamath.h@husky.neu.edu
 4. Aakash Jethva jethva.a@husky.neu.edu
 
-Web Application:
-Technologies : Sts eclipse, IntelliJ, Postman, Sql Workbench, Maria DB
+WebDev Application:
+Technologies : Sts eclipse, IntelliJ, Postman, Sql Workbench, Maria DB,DynamoDB
 
 Using JPA annotations first created a User Pojo 
 Later Extended JPA Repository to User Repository
@@ -40,10 +40,11 @@ Cloud formation
 -Subnet Groups
 
 Web Application 
+
 -Returning Successful API calls
 -Storing image on the local disk and application S3 bucket
--Updatet the application.json
+-Update the application.json
 -Handling all the API Validations
 -Adding the AWS configuration to the Web application
 
-
+All Set!
