@@ -113,7 +113,7 @@ public class UserController {
 
     @RequestMapping("/api/ping")
     public String getPing() {
-            return "OK";
+        return "OK";
     }
 
     @RequestMapping(value = "/transaction", method = RequestMethod.POST)
@@ -220,154 +220,154 @@ public class UserController {
     }
 
 
-        @GetMapping("/transaction/{id}/attachment")
-        public ResponseEntity<Object> getAttachment(@PathVariable(value="id") Long id){
-            statsDClient.incrementCounter("getAttachment");
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            User user = userRepository.findByEmail(auth.getName());
-            Optional<Transaction> trn = trsnRepo.findById(id);
-            Transaction crtrn = trn.get();
-            if(crtrn.getUser().getId() != user.getId()){
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-            }
-            List<Attachment> attachments = crtrn.getAttachments();
-            List<String> attstr = new ArrayList<String>();
-            for(Attachment a : attachments){
-                String ste = a.getId()+":"+a.getUrl();
-                attstr.add(ste);
-            }
-            Gson gson = new Gson();
-            String atts= gson.toJson(attstr);
+    @GetMapping("/transaction/{id}/attachment")
+    public ResponseEntity<Object> getAttachment(@PathVariable(value="id") Long id){
+        statsDClient.incrementCounter("getAttachment");
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        User user = userRepository.findByEmail(auth.getName());
+        Optional<Transaction> trn = trsnRepo.findById(id);
+        Transaction crtrn = trn.get();
+        if(crtrn.getUser().getId() != user.getId()){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        List<Attachment> attachments = crtrn.getAttachments();
+        List<String> attstr = new ArrayList<String>();
+        for(Attachment a : attachments){
+            String ste = a.getId()+":"+a.getUrl();
+            attstr.add(ste);
+        }
+        Gson gson = new Gson();
+        String atts= gson.toJson(attstr);
 
-            return ResponseEntity.ok(atts);
+        return ResponseEntity.ok(atts);
+    }
+
+    @PostMapping("/transaction/{id}/attachment")
+    public ResponseEntity<Object> uploadAttachment(@PathVariable(value="id") Long id, @RequestPart(value="file") MultipartFile file){
+
+        statsDClient.incrementCounter("uploadAttachment");
+        String mimeType = file.getContentType();
+        String type = mimeType.split("/")[0];
+        if (!type.equalsIgnoreCase("image")) {
+            return ResponseEntity.badRequest().body("Only Images allowed");
+        }
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        User user = userRepository.findByEmail(auth.getName());
+        Optional<Transaction> trn = trsnRepo.findById(id);
+        Transaction crtrn = trn.get();
+        if(crtrn.getUser().getId() != user.getId()){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        @PostMapping("/transaction/{id}/attachment")
-        public ResponseEntity<Object> uploadAttachment(@PathVariable(value="id") Long id, @RequestPart(value="file") MultipartFile file){
+        String fileUrl = uploadReceipt(file,this.amazonClient.getProfilename());
+        Attachment att = new Attachment();
+        att.setUrl(fileUrl);
+        att.setTransaction(crtrn);
+        crtrn.getAttachments().add(att);
+        trsnRepo.save(crtrn);
 
-            statsDClient.incrementCounter("uploadAttachment");
-            String mimeType = file.getContentType();
-            String type = mimeType.split("/")[0];
-            if (!type.equalsIgnoreCase("image")) {
-                return ResponseEntity.badRequest().body("Only Images allowed");
-            }
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            User user = userRepository.findByEmail(auth.getName());
-            Optional<Transaction> trn = trsnRepo.findById(id);
-            Transaction crtrn = trn.get();
-            if(crtrn.getUser().getId() != user.getId()){
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-            }
+        return ResponseEntity.ok(fileUrl);
+    }
 
-            String fileUrl = uploadReceipt(file,this.amazonClient.getProfilename());
-            Attachment att = new Attachment();
-            att.setUrl(fileUrl);
-            att.setTransaction(crtrn);
-            crtrn.getAttachments().add(att);
-            trsnRepo.save(crtrn);
 
-            return ResponseEntity.ok(fileUrl);
+
+    @PutMapping("/transaction/{id}/attachment/{aid}")
+    public ResponseEntity<Object> uploadAttachment(@PathVariable(value="id") Long id,@PathVariable(value="aid") Long aid, @RequestPart(value="file") MultipartFile file){
+        statsDClient.incrementCounter("updateAttachment");
+        String mimeType = file.getContentType();
+        String type = mimeType.split("/")[0];
+        if (!type.equalsIgnoreCase("image")) {
+            return ResponseEntity.badRequest().body("Only Images allowed");
+        }
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        User user = userRepository.findByEmail(auth.getName());
+        Optional<Transaction> trn = trsnRepo.findById(id);
+        Transaction crtrn = trn.get();
+        if(crtrn.getUser().getId() != user.getId()){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
+        List<Attachment> attachments = crtrn.getAttachments();
+        Attachment cat = null;
+        for(Attachment e : attachments){
+            if(e.getId()==aid)
+                cat = e;
 
-
-        @PutMapping("/transaction/{id}/attachment/{aid}")
-        public ResponseEntity<Object> uploadAttachment(@PathVariable(value="id") Long id,@PathVariable(value="aid") Long aid, @RequestPart(value="file") MultipartFile file){
-            statsDClient.incrementCounter("updateAttachment");
-            String mimeType = file.getContentType();
-            String type = mimeType.split("/")[0];
-            if (!type.equalsIgnoreCase("image")) {
-                return ResponseEntity.badRequest().body("Only Images allowed");
-            }
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            User user = userRepository.findByEmail(auth.getName());
-            Optional<Transaction> trn = trsnRepo.findById(id);
-            Transaction crtrn = trn.get();
-            if(crtrn.getUser().getId() != user.getId()){
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-            }
-
-            List<Attachment> attachments = crtrn.getAttachments();
-            Attachment cat = null;
-            for(Attachment e : attachments){
-                if(e.getId()==aid)
-                    cat = e;
-
-            }
-            if(cat == null)
-                return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-            String delete=this.amazonClient.deleteFileFromS3Bucket(cat.getUrl());
-            String fileUrl = uploadReceipt(file,this.amazonClient.getProfilename());
-
-            cat.setUrl(fileUrl);
-
-            trsnRepo.save(crtrn);
-
-            return ResponseEntity.ok(fileUrl);
         }
+        if(cat == null)
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        String delete=this.amazonClient.deleteFileFromS3Bucket(cat.getUrl());
+        String fileUrl = uploadReceipt(file,this.amazonClient.getProfilename());
 
-        @DeleteMapping("/transaction/{id}/attachment/{attachmentid}")
-        public ResponseEntity<Object> deleteAttachment(@PathVariable(value="id") Long id, @PathVariable(value="attachmentid") Long aid){
-            statsDClient.incrementCounter("deleteAttachment");
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            User user = userRepository.findByEmail(auth.getName());
+        cat.setUrl(fileUrl);
 
-            Optional<Transaction> trn = trsnRepo.findById(id);
-            Transaction crtrn = trn.get();
-            if(crtrn.getUser().getId() != user.getId()){
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-            }
-            List<Attachment> attachments = crtrn.getAttachments();
-            Attachment cat = null;
-            for(Attachment e : attachments){
-                if(e.getId()==aid)
-                    cat = e;
+        trsnRepo.save(crtrn);
 
-            }
-            if(cat == null)
-                return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-            String fileUrl = cat.getUrl();
-            String message = deleteReceipt(fileUrl,this.amazonClient.getProfilename());
-            attachments.remove(cat);
-            trsnRepo.save(crtrn);
-            //JsonObject j =new JsonObject();
-            //j.addProperty("message", "Attachment Deleted");
-            return ResponseEntity.ok("Attachment Delete");
+        return ResponseEntity.ok(fileUrl);
+    }
+
+    @DeleteMapping("/transaction/{id}/attachment/{attachmentid}")
+    public ResponseEntity<Object> deleteAttachment(@PathVariable(value="id") Long id, @PathVariable(value="attachmentid") Long aid){
+        statsDClient.incrementCounter("deleteAttachment");
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        User user = userRepository.findByEmail(auth.getName());
+
+        Optional<Transaction> trn = trsnRepo.findById(id);
+        Transaction crtrn = trn.get();
+        if(crtrn.getUser().getId() != user.getId()){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
+        List<Attachment> attachments = crtrn.getAttachments();
+        Attachment cat = null;
+        for(Attachment e : attachments){
+            if(e.getId()==aid)
+                cat = e;
 
-        @PostMapping("/uploadFile")
-        public String uploadFile(@RequestPart(value = "file") MultipartFile file) {
-            return this.amazonClient.uploadFile(file);
         }
+        if(cat == null)
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        String fileUrl = cat.getUrl();
+        String message = deleteReceipt(fileUrl,this.amazonClient.getProfilename());
+        attachments.remove(cat);
+        trsnRepo.save(crtrn);
+        //JsonObject j =new JsonObject();
+        //j.addProperty("message", "Attachment Deleted");
+        return ResponseEntity.ok("Attachment Delete");
+    }
 
-        @DeleteMapping("/deleteFile")
-        public String deleteFile(@RequestPart(value = "url") String fileUrl) {
-            return this.amazonClient.deleteFileFromS3Bucket(fileUrl);
+    @PostMapping("/uploadFile")
+    public String uploadFile(@RequestPart(value = "file") MultipartFile file) {
+        return this.amazonClient.uploadFile(file);
+    }
+
+    @DeleteMapping("/deleteFile")
+    public String deleteFile(@RequestPart(value = "url") String fileUrl) {
+        return this.amazonClient.deleteFileFromS3Bucket(fileUrl);
+    }
+    @PostMapping("/forgotpass")
+    public String forgotPassword(@RequestPart(value="email") String userName) {
+        System.out.println("Send reset link to: "+userName);
+        statsDClient.incrementCounter("forgotPassword");
+        User user = userRepository.findByEmail(userName);
+        if(user!=null){
+            BasicAWSCredentials credentials = this.amazonClient.getCredentials();
+            //AmazonSNSClient snsClient = new AmazonSNSClient(new InstanceProfileCredentialsProvider());
+            AmazonSNSClient snsClient = (AmazonSNSClient) AmazonSNSClient
+                    .builder()
+                    .withRegion(String.valueOf(Region.getRegion(Regions.US_EAST_1)))
+                    .withCredentials(new AWSStaticCredentialsProvider(credentials))
+                    .build();
+
+
+            String topicArn = snsClient.createTopic("LambdaTopic").getTopicArn();
+
+            PublishRequest publishRequest = new PublishRequest(topicArn, userName);
+            PublishResult publishResult = snsClient.publish(publishRequest);
+            // response.setStatus(HttpServletResponse.SC_OK);
+            return "Request Sent";
+        }else{
+            return "No user found";
         }
-        @PostMapping("/forgotpass")
-        public String forgotPassword(@RequestPart(value="email") String userName) {
-            System.out.println("Send reset link to: "+userName);
-            statsDClient.incrementCounter("forgotPassword");
-            User user = userRepository.findByEmail(userName);
-            if(user!=null){
-                BasicAWSCredentials credentials = this.amazonClient.getCredentials();
-                //AmazonSNSClient snsClient = new AmazonSNSClient(new InstanceProfileCredentialsProvider());
-                AmazonSNSClient snsClient = (AmazonSNSClient) AmazonSNSClient
-                        .builder()
-                        .withRegion(String.valueOf(Region.getRegion(Regions.US_EAST_1)))
-                        .withCredentials(new AWSStaticCredentialsProvider(credentials))
-                        .build();
-
-
-                String topicArn = snsClient.createTopic("LambdaTopic").getTopicArn();
-
-                PublishRequest publishRequest = new PublishRequest(topicArn, userName);
-                PublishResult publishResult = snsClient.publish(publishRequest);
-                // response.setStatus(HttpServletResponse.SC_OK);
-                return "Request Sent";
-            }else{
-                return "No user found";
-            }
 
     }
 
