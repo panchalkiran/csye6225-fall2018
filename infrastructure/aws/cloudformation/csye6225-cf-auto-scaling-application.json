@@ -10,7 +10,12 @@
 			"Default": "stack01"
 
 		},
-		"subnetid": {
+		"subnetid1": {
+			"Description": "Subnet Group name",
+			"Type": "String"
+
+		},
+        "subnetid2": {
 			"Description": "Subnet Group name",
 			"Type": "String"
 
@@ -262,7 +267,7 @@
 				"Properties": {
                                         "Name": "ELB",
 					"Scheme": "internet-facing",
-					"Subnets": [
+                    "Subnets": [
 						"subnet-0ff7e11c54b8c20d0",
 						"subnet-0dac7b5b573560a4a"
 					],

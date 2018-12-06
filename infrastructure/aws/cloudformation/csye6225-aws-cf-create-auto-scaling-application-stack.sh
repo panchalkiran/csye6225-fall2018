@@ -24,17 +24,19 @@ certARN=$(aws acm list-certificates --query CertificateSummaryList[].Certificate
 echo "$certARN"
 
 export VpcId=$(aws ec2 describe-vpcs --query "Vpcs[0]. [VpcId]" --output text)
-export subnetid=$(aws ec2 describe-subnets --query 'Subnets[*].[SubnetId, VpcId, AvailabilityZone, CidrBlock]' --output text|grep 10.0.1.0/24|grep us-east-1a|awk '{print $1}')
+export subnetid1=$(aws ec2 describe-subnets --query 'Subnets[*].[SubnetId, VpcId, AvailabilityZone, CidrBlock]' --output text|grep 10.0.1.0/24|grep us-east-1a|awk '{print $1}')
+export subnetid2=$(aws ec2 describe-subnets --query 'Subnets[*].[SubnetId, VpcId, AvailabilityZone, CidrBlock]' --output text|grep 10.0.2.0/24|grep us-east-1b|awk '{print $1}')
 export securitygrp=$(aws ec2 describe-security-groups --query 'SecurityGroups[0].[GroupId]' --output text| awk '{print $1}')
 echo $VpcId
-echo $subnetid
+echo $subnetid1
+echo $subnetid2
 echo $securitygrp
 instanceProfileName=$(aws iam list-instance-profiles --query InstanceProfiles[1].InstanceProfileName --output text| awk '{print $1}')
 echo $instanceProfileName
 echo "S3 code deploy bucket: $s3artifact"
 echo "S3 attachement bucket: $s3attachment"
 
-createOutput=$(aws cloudformation create-stack --stack-name $stackname --template-body file://csye6225-cf-auto-scaling-application.json --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM --parameters ParameterKey=stackname,ParameterValue=$stackname ParameterKey=subnetid,ParameterValue=$subnetid ParameterKey=securitygrp,ParameterValue=$securitygrp ParameterKey=VpcId,ParameterValue=$VpcId ParameterKey=instanceProfileName,ParameterValue=$instanceProfileName ParameterKey=s3artifact,ParameterValue=$s3artifact ParameterKey=s3attachment,ParameterValue=$s3attachment ParameterKey=hostedzone,ParameterValue=$domain ParameterKey=hzid,ParameterValue=$HZID ParameterKey=certARN,ParameterValue=$certARN ParameterKey=appname,ParameterValue=$appname ParameterKey=depname,ParameterValue=$depname)
+createOutput=$(aws cloudformation create-stack --stack-name $stackname --template-body file://csye6225-cf-auto-scaling-application.json --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM --parameters ParameterKey=stackname,ParameterValue=$stackname ParameterKey=subnetid1,ParameterValue=$subnetid1 ParameterKey=subnetid2,ParameterValue=$subnetid2 ParameterKey=securitygrp,ParameterValue=$securitygrp ParameterKey=VpcId,ParameterValue=$VpcId ParameterKey=instanceProfileName,ParameterValue=$instanceProfileName ParameterKey=s3artifact,ParameterValue=$s3artifact ParameterKey=s3attachment,ParameterValue=$s3attachment ParameterKey=hostedzone,ParameterValue=$domain ParameterKey=hzid,ParameterValue=$HZID ParameterKey=certARN,ParameterValue=$certARN ParameterKey=appname,ParameterValue=$appname ParameterKey=depname,ParameterValue=$depname)
 
 
 if [ $? -eq 0 ]; then
