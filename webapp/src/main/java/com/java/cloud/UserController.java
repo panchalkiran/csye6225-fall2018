@@ -168,7 +168,6 @@ public class UserController {
         List<Transaction> txns = trsnRepo.findByUser(user);
         Optional<Transaction> cr = null;
         /*for(Transaction txn : txns){
-
             if(txn.getId()==id){
                  currentTransaction = txn;
             }
@@ -203,15 +202,12 @@ public class UserController {
         List<Transaction> txns = trsnRepo.findByUser(user);
 
         /*for(Transaction txn : txns){
-
-
             if(txn.getId().toString().equals(id.toString())){
                 currentTransaction = txn;
             }
         }*/
         Optional<Transaction> cr = null;
         /*for(Transaction txn : txns){
-
             if(txn.getId()==id){
                  currentTransaction = txn;
             }
@@ -250,8 +246,6 @@ public class UserController {
         public ResponseEntity<Object> uploadAttachment(@PathVariable(value="id") Long id, @RequestPart(value="file") MultipartFile file){
 
             statsDClient.incrementCounter("uploadAttachment");
-            
-            Gson gson = new Gson();
             String mimeType = file.getContentType();
             String type = mimeType.split("/")[0];
             if (!type.equalsIgnoreCase("image")) {
@@ -271,10 +265,8 @@ public class UserController {
             att.setTransaction(crtrn);
             crtrn.getAttachments().add(att);
             trsnRepo.save(crtrn);
-            String ste = fileUrl+":"+att.getId();
-            String atts = gson.toJson(ste);
 
-            return ResponseEntity.ok(atts);
+            return ResponseEntity.ok(fileUrl);
         }
 
 
