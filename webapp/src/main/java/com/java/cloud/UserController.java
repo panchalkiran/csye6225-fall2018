@@ -270,7 +270,7 @@ public class UserController {
             crtrn.getAttachments().add(att);
             trsnRepo.save(crtrn);
 
-            return ResponseEntity.ok(fileUrl);
+            return ResponseEntity.ok("URL: "fileUrl+" ; AttachmentID "+att.getId());
         }
 
 
