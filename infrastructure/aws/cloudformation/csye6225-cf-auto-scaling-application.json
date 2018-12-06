@@ -10,7 +10,12 @@
 			"Default": "stack01"
 
 		},
-		"subnetid": {
+		"subnetid1": {
+			"Description": "Subnet Group name",
+			"Type": "String"
+
+		},
+        "subnetid2": {
 			"Description": "Subnet Group name",
 			"Type": "String"
 
@@ -170,8 +175,8 @@
 					"PropagateAtLaunch": true
 				}],
 				"VPCZoneIdentifier": [
-					"subnet-089c2f514261da353",
-					"subnet-021e7f5ce4d81e7ed"
+					"subnet-0ff7e11c54b8c20d0",
+					"subnet-0dac7b5b573560a4a"
 				],
 				"LaunchConfigurationName": {
                                          "Ref": "AsgLaunchConfig"
@@ -263,8 +268,8 @@
                                         "Name": "ELB",
 					"Scheme": "internet-facing",
 					"Subnets": [
-						"subnet-089c2f514261da353",
-					    "subnet-021e7f5ce4d81e7ed"
+						"subnet-0ff7e11c54b8c20d0",
+					    "subnet-0dac7b5b573560a4a"
 					],
 					"LoadBalancerAttributes": [{
 						"Key": "idle_timeout.timeout_seconds",
