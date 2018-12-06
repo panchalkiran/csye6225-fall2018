@@ -10,12 +10,7 @@
 			"Default": "stack01"
 
 		},
-		"subnetid1": {
-			"Description": "Subnet Group name",
-			"Type": "String"
-
-		},
-        "subnetid2": {
+		"subnetid": {
 			"Description": "Subnet Group name",
 			"Type": "String"
 
@@ -175,8 +170,8 @@
 					"PropagateAtLaunch": true
 				}],
 				"VPCZoneIdentifier": [
-					"subnet-0ff7e11c54b8c20d0",
-					"subnet-0dac7b5b573560a4a"
+					"subnet-089c2f514261da353",
+					"subnet-021e7f5ce4d81e7ed"
 				],
 				"LaunchConfigurationName": {
                                          "Ref": "AsgLaunchConfig"
@@ -249,7 +244,7 @@
 					"Statistic": "Average",
 					"Period": "300",
 					"EvaluationPeriods": "2",
-					"Threshold": "8",
+                    "Threshold": "8",
 					"AlarmActions": [{
 						"Ref": "WebServerScaleDownPolicy"
 					}],
@@ -267,16 +262,16 @@
 				"Properties": {
                                         "Name": "ELB",
 					"Scheme": "internet-facing",
-                    "Subnets": [
-						"subnet-0ff7e11c54b8c20d0",
-						"subnet-0dac7b5b573560a4a"
+					"Subnets": [
+						"subnet-089c2f514261da353",
+					    "subnet-021e7f5ce4d81e7ed"
 					],
 					"LoadBalancerAttributes": [{
 						"Key": "idle_timeout.timeout_seconds",
 						"Value": "60"
 					}],
 					"SecurityGroups": [{
-						"Ref": "ourLoadBalancerSecurityGroup"
+						"Ref": "WebServerSecurityGroup"
 					}],
 					"Tags": [{
 						"Key": "Name",
@@ -284,34 +279,6 @@
 					}]
 				}
 			},
-            "ourLoadBalancerSecurityGroup":{
-         "Type":"AWS::EC2::SecurityGroup",
-         "Properties":{
-            "GroupDescription":"Load Balancer Security Group",
-            "GroupName":"LoadBalancerGroupSecurity",
-            "VpcId":{
-               "Ref":"VpcId"
-            },
-            "SecurityGroupIngress":[
-               {
-                  "IpProtocol":"tcp",
-                  "FromPort":"443",
-                  "ToPort":"443",
-                  "CidrIp":"0.0.0.0/0"
-               }
-            ],
-            "SecurityGroupEgress":[
-               {
-                  "IpProtocol":"tcp",
-                  "FromPort":"8080",
-                  "ToPort":"8080",
-                  "DestinationSecurityGroupId":{
-                     "Ref":"WebServerSecurityGroup"
-                  }
-               }
-            ]
-         }
-      },
 			"Listener": {
 				"Type": "AWS::ElasticLoadBalancingV2::Listener",
 				"Properties": {
