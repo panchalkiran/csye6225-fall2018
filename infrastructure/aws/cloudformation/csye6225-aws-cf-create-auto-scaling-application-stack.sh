@@ -29,7 +29,7 @@ export securitygrp=$(aws ec2 describe-security-groups --query 'SecurityGroups[0]
 echo $VpcId
 echo $subnetid
 echo $securitygrp
-instanceProfileName=$(aws iam list-instance-profiles --query InstanceProfiles[].InstanceProfileName --output text| awk '{print $1}')
+instanceProfileName=$(aws iam list-instance-profiles --query InstanceProfiles[1].InstanceProfileName --output text| awk '{print $1}')
 echo $instanceProfileName
 echo "S3 code deploy bucket: $s3artifact"
 echo "S3 attachement bucket: $s3attachment"
