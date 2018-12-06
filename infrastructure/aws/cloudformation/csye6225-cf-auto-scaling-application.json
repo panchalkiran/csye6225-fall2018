@@ -170,8 +170,8 @@
 					"PropagateAtLaunch": true
 				}],
 				"VPCZoneIdentifier": [
-					"subnet-05cf2df96b0e0785e",
-					"subnet-0c5d7929818fe44c0"
+					"subnet-089c2f514261da353",
+					"subnet-021e7f5ce4d81e7ed"
 				],
 				"LaunchConfigurationName": {
                                          "Ref": "AsgLaunchConfig"
@@ -222,7 +222,7 @@
 					"Statistic": "Average",
 					"Period": "300",
 					"EvaluationPeriods": "2",
-					"Threshold": "90",
+					"Threshold": "5",
 					"AlarmActions": [{
 						"Ref": "WebServerScaleUpPolicy"
 					}],
@@ -244,7 +244,7 @@
 					"Statistic": "Average",
 					"Period": "300",
 					"EvaluationPeriods": "2",
-					"Threshold": "70",
+					"Threshold": "3",
 					"AlarmActions": [{
 						"Ref": "WebServerScaleDownPolicy"
 					}],
@@ -263,8 +263,8 @@
                                         "Name": "ELB",
 					"Scheme": "internet-facing",
 					"Subnets": [
-						"subnet-05cf2df96b0e0785e",
-						"subnet-0c5d7929818fe44c0"
+						"subnet-089c2f514261da353",
+					    "subnet-021e7f5ce4d81e7ed"
 					],
 					"LoadBalancerAttributes": [{
 						"Key": "idle_timeout.timeout_seconds",
