@@ -250,6 +250,8 @@ public class UserController {
         public ResponseEntity<Object> uploadAttachment(@PathVariable(value="id") Long id, @RequestPart(value="file") MultipartFile file){
 
             statsDClient.incrementCounter("uploadAttachment");
+            
+            Gson gson = new Gson();
             String mimeType = file.getContentType();
             String type = mimeType.split("/")[0];
             if (!type.equalsIgnoreCase("image")) {
@@ -269,8 +271,10 @@ public class UserController {
             att.setTransaction(crtrn);
             crtrn.getAttachments().add(att);
             trsnRepo.save(crtrn);
+            String ste = fileUrl+":"+att.getId();
+            String atts = gson.toJson(ste);
 
-            return ResponseEntity.ok("URL: "fileUrl+" ; AttachmentID "+att.getId());
+            return ResponseEntity.ok(atts);
         }
 
 
