@@ -276,7 +276,7 @@
 						"Value": "60"
 					}],
 					"SecurityGroups": [{
-						"Ref": "WebServerSecurityGroup"
+						"Ref": "ourLoadBalancerSecurityGroup"
 					}],
 					"Tags": [{
 						"Key": "Name",
@@ -284,6 +284,34 @@
 					}]
 				}
 			},
+            "ourLoadBalancerSecurityGroup":{
+         "Type":"AWS::EC2::SecurityGroup",
+         "Properties":{
+            "GroupDescription":"Load Balancer Security Group",
+            "GroupName":"LoadBalancerGroupSecurity",
+            "VpcId":{
+               "Ref":"VpcId"
+            },
+            "SecurityGroupIngress":[
+               {
+                  "IpProtocol":"tcp",
+                  "FromPort":"443",
+                  "ToPort":"443",
+                  "CidrIp":"0.0.0.0/0"
+               }
+            ],
+            "SecurityGroupEgress":[
+               {
+                  "IpProtocol":"tcp",
+                  "FromPort":"8080",
+                  "ToPort":"8080",
+                  "DestinationSecurityGroupId":{
+                     "Ref":"WebServerSecurityGroup"
+                  }
+               }
+            ]
+         }
+      },
 			"Listener": {
 				"Type": "AWS::ElasticLoadBalancingV2::Listener",
 				"Properties": {
